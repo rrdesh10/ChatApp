@@ -1,0 +1,26 @@
+{{ chatroom.name }}
+
+<form method="POST">
+    {% csrf_token %}
+    <input type="text" name="message" placeholder="Enter message">
+    <button>Send</button>
+</form>
+
+{{ chatroom.slug|json_script:"json_chatroomname" }}
+
+<script>
+    const ChatRoomName = JSON.parse(document.getElementById("json_chatroomname").textContent);
+    const ChatSocket = new WebSocket("ws://"+window.location.host+"/ws/"+ChatRoomName+"/");
+
+    ChatSocket.onopen = (event) => {
+        console.log('WebSocket connection established:', event);
+    };
+
+    // ChatSocket.onmessage = function(e){
+    //     console.log("Socket connected")
+    // }
+
+    // ChatSocket.onclose = function(e){
+    //     console.log("Socket closed")
+    // }
+</script>
