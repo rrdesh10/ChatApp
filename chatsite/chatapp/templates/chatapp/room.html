@@ -1,26 +1,48 @@
 {{ chatroom.name }}
-
+<div id="send-messages"></div>
 <form method="POST">
     {% csrf_token %}
-    <input type="text" name="message" placeholder="Enter message">
-    <button>Send</button>
+    <input id="message-input" type="text" name="message" placeholder="Enter message">
+    <button id="send-button" type="submit">Send</button>
 </form>
 
 {{ chatroom.slug|json_script:"json_chatroomname" }}
+{{ request.user.username|json_script:"json_username" }}
 
-<script>
-    const ChatRoomName = JSON.parse(document.getElementById("json_chatroomname").textContent);
-    const ChatSocket = new WebSocket("ws://"+window.location.host+"/ws/"+ChatRoomName+"/");
+<script type="text/javascript">
 
-    ChatSocket.onopen = (event) => {
-        console.log('WebSocket connection established:', event);
-    };
+    const roomName = JSON.parse(document.getElementById('json_chatroomname').textContent);
+    const username = JSON.parse(document.getElementById('json_username').textContent);
 
-    // ChatSocket.onmessage = function(e){
-    //     console.log("Socket connected")
-    // }
+    console.log(roomName)
 
-    // ChatSocket.onclose = function(e){
-    //     console.log("Socket closed")
-    // }
+    const socket = new WebSocket(
+        'ws://'+window.location.host+'/ws/'+roomName+'/'
+    );
+
+    socket.onmessage = function(e){
+        const data = JSON.parse(e.data)
+        if (data.message){
+            let html = data.username + ": " + data.message + data.room + '</br>'
+            document.getElementById('send-messages').innerHTML+=html
+        }else{
+            alert("message is empty")
+        }
+    }
+
+    socket.onclose = function(e){
+        console.log("closed")
+    }
+
+    document.getElementById('send-button').onclick = function(e){
+        e.preventDefault
+        const messageInput = document.getElementById('message-input');
+        const message = messageInput.value;
+
+        socket.send(JSON.stringify({
+            'message' : message,
+            'username': username,
+            'room':roomName,
+        }));
+    }
 </script>

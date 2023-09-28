@@ -72,6 +72,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'chatsite.wsgi.application'
 ASGI_APPLICATION = 'chatsite.asgi.application'
 
+
 # Channel
 CHANNEL_LAYERS = {
     'default':{
