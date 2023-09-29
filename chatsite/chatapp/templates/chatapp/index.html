@@ -1,4 +1,17 @@
-<h1>List of Chat Rooms</h1>
+{% extends 'chatapp/base.html' %}
+
+{% block body %}
+
+<div class="m-10 font-bold text-xl">
+    <h1>List of Chat Rooms</h1>
+</div>
+
 {% for chatroom in chatrooms %}
-    <a href="{% url 'chatroom' chatroom.slug %}">{{ chatroom }}</a><br/>
+
+    <div class="shadow-lg p-5 m-7 font-semibold bg-blue-400 rounded-lg text-white">
+        <a href="{% url 'chatroom' chatroom.slug %}">{{ chatroom }}</a><br/>
+    </div>
+    
 {% endfor %}
+
+{% endblock %}
