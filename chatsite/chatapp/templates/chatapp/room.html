@@ -1,10 +1,38 @@
-{{ chatroom.name }}
-<div id="send-messages"></div>
-<form method="POST">
-    {% csrf_token %}
-    <input id="message-input" type="text" name="message" placeholder="Enter message">
-    <button id="send-button" type="submit">Send</button>
-</form>
+{% extends 'chatapp/base.html' %}
+
+{% block body %}
+
+<div class="font-bold text-2xl m-10">
+    {{ chatroom.name }}
+</div>
+
+<div class="message-container m-10 overflow-auto h-[900px]" id="message-container">
+    <div id="chat-messages">
+        {% for message in messages %}
+        <div class="messages p-3 m-3 shadow-lg rounded-lg bg-blue-100 w-1/2">
+            <div class="text-sm text-gray-500">
+                {{ message.user.username }}
+            </div>
+            <div class="text-md font-semibold">
+                {{ message.message_content }}
+            </div>
+            
+            <div class="text-sm text-gray-500">
+                {{ message.date }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+
+<div class="form-container fixed insert-x-0 bottom-0 bg-blue-800 p-2 w-full">
+    <form method="POST">
+        {% csrf_token %}
+        <input class="p-2 ml-3 rounded-lg" id="message-input" type="text" name="message" placeholder="Enter message">
+        <button class="ml-2 text-white font-semibold" id="send-button" type="submit">Send</button>
+    </form>
+</div>
 
 {{ chatroom.slug|json_script:"json_chatroomname" }}
 {{ request.user.username|json_script:"json_username" }}
@@ -14,7 +42,6 @@
     const roomName = JSON.parse(document.getElementById('json_chatroomname').textContent);
     const username = JSON.parse(document.getElementById('json_username').textContent);
 
-    console.log(roomName)
 
     const socket = new WebSocket(
         'ws://'+window.location.host+'/ws/'+roomName+'/'
@@ -22,9 +49,13 @@
 
     socket.onmessage = function(e){
         const data = JSON.parse(e.data)
+        console.log(data)
         if (data.message){
-            let html = data.username + ": " + data.message + data.room + '</br>'
-            document.getElementById('send-messages').innerHTML+=html
+            let html ='<div class="messages p-3 m-3 shadow-lg rounded-lg bg-blue-100 w-1/2">'+
+                    '<div class="text-sm text-gray-500">'+data.username + '</div>' +
+                    '<div class="text-md font-semibold">'+ data.message + '</div>' + '<div class="text-sm text-gray-500">' + 'Now' + '</div>'
+            document.getElementById('chat-messages').innerHTML+=html
+            scroll()
         }else{
             alert("message is empty")
         }
@@ -35,7 +66,7 @@
     }
 
     document.getElementById('send-button').onclick = function(e){
-        e.preventDefault
+        e.preventDefault()
         const messageInput = document.getElementById('message-input');
         const message = messageInput.value;
 
@@ -44,5 +75,17 @@
             'username': username,
             'room':roomName,
         }));
+
+        messageInput.value = ''
+    };
+
+    function scroll(){
+        const mcontainer = document.getElementById('message-container')
+        mcontainer.scrollTop = mcontainer.scrollHeight
     }
+    scroll()
+
 </script>
+
+
+{% endblock %}
